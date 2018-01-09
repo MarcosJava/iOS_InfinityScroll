@@ -61,17 +61,17 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         return cell
     }
     
+    
     func tableView(_ tableView: UITableView,
                    willDisplay cell: UITableViewCell,
                    forRowAt indexPath: IndexPath){
-        print(indexPath.row)
-        
+        print(indexPath.row)        
         if indexPath.row < 10 || (indexPath.row + 1) == self.datas.count {
             spinner.startAnimating()
-            
+
             Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: { (time) in
                 self.spinner.stopAnimating()
-                
+
                 //Add more dates to the bottom
                 print("Add more dates to the bottom")
                 let lastDate = self.datas.last!
@@ -80,7 +80,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
                     endDate: lastDate.dateFromDays(self.totalDatas)
                 )
                 self.datas.append(contentsOf: additionalDays)
-                
+
                 // Update the tableView
                 print("Update the tableView")
                 self.tableView.reloadData()
