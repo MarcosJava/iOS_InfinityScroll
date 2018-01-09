@@ -12,26 +12,41 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var tableView: UITableView!
     
-    var datas:[NSDate] = []
-    let totalDatas:Int = 20
+    lazy var datas:[Date] = {
+        let dateInit = Date().dateFromDays(-10)
+        let dateEnd = Date().dateFromDays(10)
+        return self.generateDays(dateInit, endDate: dateEnd)
+    }()
+    
+    let totalDatas:Int = 5
     let identifier = "cell"
+    let dateFormatter = DateFormatter()
     let spinner = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     
     
     override func viewDidLoad() {
-        createDatas()
         super.viewDidLoad()
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
+        self.dateFormatter.dateFormat = "dd-MM-yyyy"
+        configSpinner()
     }
     
-    func createDatas(){
-        for _ in 0...totalDatas {
-            datas.append(NSDate())
-        }
+    func configSpinner(){
+        self.spinner.frame = CGRect(x: 0, y: 0, width: self.tableView.frame.width, height: 44)
+        self.spinner.hidesWhenStopped = true
+        self.tableView.tableFooterView = spinner;
     }
+
+    func generateDays(_ beginDate: Date, endDate: Date) -> [Date] {
+        var dates: [Date] = []
+        var date = beginDate
+        
+        while date.compare(endDate) != .orderedDescending {
+            dates.append(date)
+            date = date.dateFromDays(1)
+        }
+        return dates
+    }
+    
 }
 
 
@@ -42,23 +57,35 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath)
-        cell.textLabel?.text = String.init(describing: datas[indexPath.row])
+        cell.textLabel?.text = dateFormatter.string(from: self.datas[indexPath.row])
         return cell
     }
     
     func tableView(_ tableView: UITableView,
                    willDisplay cell: UITableViewCell,
                    forRowAt indexPath: IndexPath){
-
         print(indexPath.row)
-        if indexPath.row < 10 {
+        
+        if indexPath.row < 10 || (indexPath.row + 1) == self.datas.count {
             spinner.startAnimating()
-            spinner.frame = CGRect(x: 0, y: 0, width: self.tableView.frame.width, height: 44)
-            self.tableView.tableFooterView = spinner;
+            
+            Timer.scheduledTimer(withTimeInterval: 10, repeats: false, block: { (time) in
+                self.spinner.stopAnimating()
+                
+                //Add more dates to the bottom
+                print("Add more dates to the bottom")
+                let lastDate = self.datas.last!
+                let additionalDays = self.generateDays(
+                    lastDate.dateFromDays(1),
+                    endDate: lastDate.dateFromDays(self.totalDatas)
+                )
+                self.datas.append(contentsOf: additionalDays)
+                
+                // Update the tableView
+                print("Update the tableView")
+                self.tableView.reloadData()
+            })
         }
-//        if (indexPath.row == self.data.count - 1) {
-//            getMoreData() // network request to get more data
-//        }
     }
     
 }
